@@ -1,7 +1,7 @@
-#CE4041/CZ4041 Research
-###This research is to be conducted on Google Drive through Colaboratory
+# CE4041/CZ4041 Research
+### This research is to be conducted on Google Drive through Colaboratory
 ### Note: Save this folder to your Drive first before you proceed!
-##1. Move to project directory
+## 1. Move to project directory
 Run this piece of code every time to move to the project directory
 ```python
 from google.colab import drive
@@ -9,7 +9,7 @@ drive.mount('/content/drive')
 import os
 os.chdir('/content/drive/My Drive/4041 Code+Data')
 ```
-##2. File access template
+## 2. File access template
 The following template can be used when you need to load a specific CSV file
 
 ```python
@@ -40,9 +40,9 @@ Test data example:
 attribute1,attribute2,attribute3,attribute4,attribute5,label
 ```
 
-##3. WEKA
+## 3. WEKA
 Run the following two chunks of code when you need to use the WEKA package, to install dependencies
-####What is WEKA? Refer to https://www.cs.waikato.ac.nz/ml/weka/ and https://weka.sourceforge.io/doc.stable-3-8/weka/classifiers/Classifier.html
+#### What is WEKA? Refer to https://www.cs.waikato.ac.nz/ml/weka/ and https://weka.sourceforge.io/doc.stable-3-8/weka/classifiers/Classifier.html
 ```python
 import os
 import sys
@@ -71,7 +71,7 @@ cls = ScikitLearnWekaWrapper(cls) # wrap WEKA classifier
 # use cls as if it were a Scikit-Learn classifier
 ```
 For a full example, please refer to weka-example.ipynb
-##4. Functions to be implemented
+## 4. Functions to be implemented
 ```python
 def generate_base_classifier(clf_name):
     return clf
