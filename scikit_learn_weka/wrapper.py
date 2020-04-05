@@ -13,10 +13,10 @@ class ScikitLearnWekaWrapper(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta)
     Attributes:
     _clf: Weka classifier object
     """
-    
+
     def __init__(self, clf=None):
         self._clf = clf
-        
+
     def _get_prediction_dataset(self, X):
         # convert to numpy array
         if isinstance(X, pd.DataFrame):
@@ -27,7 +27,7 @@ class ScikitLearnWekaWrapper(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta)
         dataset.insert_attribute(self._class_att, dataset.num_attributes)
         dataset.class_is_last()
         return dataset
-        
+
     def _get_training_dataset(self, X, y):
         # convert to numpy array
         if isinstance(X, pd.DataFrame):
@@ -39,6 +39,9 @@ class ScikitLearnWekaWrapper(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta)
         elif not isinstance(y, np.ndarray):
             raise Exception("Incompatible data type")
 
+        if y.dtype == "O":
+            for i in range(0, len(y)):
+                y[i] = y[i].encode()
         dataset = create_instances_from_matrices(X, y, name="generated from matrices") # generate dataset
 
         # convert label to nominal
@@ -60,7 +63,7 @@ class ScikitLearnWekaWrapper(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta)
         dataset.class_is_last() # indicate class label
 
         return dataset
-        
+
     def _store_class_labels(self, dataset):
         self._class_att = dataset.class_attribute # store label attribute
         labels = str(self._class_att).split()[2][1:-1].split(',')
@@ -75,7 +78,7 @@ class ScikitLearnWekaWrapper(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta)
             preds.append(self.classes_[int(self._clf.classify_instance(inst))])
         preds = np.array(preds)
         return preds
-        
+
     def predict_proba(self, X):
         dataset = self._get_prediction_dataset(X)
         dists = []
@@ -83,7 +86,7 @@ class ScikitLearnWekaWrapper(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta)
             dists.append(self._clf.distribution_for_instance(inst))
         dists = np.array(dists)
         return dists
-        
+
     def fit(self, X, y):
         # transform dataset
         dataset = self._get_training_dataset(X, y)
@@ -91,10 +94,10 @@ class ScikitLearnWekaWrapper(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta)
         self._store_class_labels(dataset)
         # start training
         self._clf.build_classifier(dataset)
-        
+
     def score(self, X, y):
         y_pred = self.predict(X)
         return accuracy_score(y, y_pred)
-        
+
     def get_params(self, deep=False):
         return {'clf' : self._clf}
