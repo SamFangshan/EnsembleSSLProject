@@ -9,7 +9,7 @@ TYPES_OF_DATA = ['tra', 'trs', 'tst']
 def convert_to_csv(dataset, percentage, partition, type_of_data):
     dat_filename = 'ssl_{}/{}-ssl{}/{}-ssl{}-10-{}{}.dat'.format(percentage, dataset, percentage, dataset, percentage, partition, type_of_data)
     csv_filename = 'ssl_{}/{}-ssl{}/{}-ssl{}-10-{}{}.csv'.format(percentage, dataset, percentage, dataset, percentage, partition, type_of_data)
-    
+
     print("Converting {}".format(dat_filename))
     f = open(dat_filename, 'r')
     lines = f.readlines()
@@ -21,7 +21,9 @@ def convert_to_csv(dataset, percentage, partition, type_of_data):
             break
         tokens = l.split(' ')
         if tokens[0] == '@attribute':
-            attributes.append(tokens[1].strip())
+            token = tokens[1].strip()
+            token = token[0: token.find("{")]
+            attributes.append(token)
         line_num += 1
     for i in range(line_num, len(lines)):
         lines[i] = lines[i].replace(" ", "")
