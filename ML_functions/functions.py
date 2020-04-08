@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.base import clone
-from scikit_learn_weka.wrapper import ScikitLearnWekaWrapper
+from scikit_learn_weka.wrapper import WekaWrapper, ScikitLearnWekaWrapper
 from weka.classifiers import Classifier
 from sklearn.metrics import accuracy_score
 from SSL_Classifiers import *
@@ -10,21 +10,23 @@ DATASETS = ['satimage', 'glass', 'hepatitis', 'magic', 'bupa', 'wisconsin', 'lym
 # Use a factory pattern obtain a primitive classifier
 def get_base_classifier(clf_name):
     if clf_name == "NB":
-        return ScikitLearnWekaWrapper(Classifier(classname="weka.classifiers.bayes.NaiveBayes"))
+        classname = "weka.classifiers.bayes.NaiveBayes"
     elif clf_name == "MLP":
-        return ScikitLearnWekaWrapper(Classifier(classname="weka.classifiers.functions.MultilayerPerceptron"))
+        classname = "weka.classifiers.functions.MultilayerPerceptron"
     elif clf_name == "SMO":
-        return ScikitLearnWekaWrapper(Classifier(classname="weka.classifiers.functions.SMO"))
+        classname = "weka.classifiers.functions.SMO"
     elif clf_name == "LMT":
-        return ScikitLearnWekaWrapper(Classifier(classname="weka.classifiers.trees.LMT"))
+        classname = "weka.classifiers.trees.LMT"
     elif clf_name == "PART":
-        return ScikitLearnWekaWrapper(Classifier(classname="weka.classifiers.rules.PART"))
+        classname = "weka.classifiers.rules.PART"
     elif clf_name == "3NN":
-        return ScikitLearnWekaWrapper(Classifier(classname="weka.classifiers.lazy.IBk"))
+        classname = "weka.classifiers.lazy.IBk"
     elif clf_name == "C4.5":
-        return ScikitLearnWekaWrapper(Classifier(classname="weka.classifiers.trees.J48"))
+        classname = "weka.classifiers.trees.J48"
     elif clf_name == "RIPPER":
-        return ScikitLearnWekaWrapper(Classifier(classname="weka.classifiers.rules.JRip"))
+        classname = "weka.classifiers.rules.JRip"
+        
+    return ScikitLearnWekaWrapper(WekaWrapper(Classifier(classname=classname), classname))
 
 # Train and Validate on a specific dataset
 def train_and_validate(clf, L, U, X_test, y_test, mode="self"):

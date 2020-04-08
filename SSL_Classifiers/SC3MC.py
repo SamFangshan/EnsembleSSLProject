@@ -1,15 +1,49 @@
 from sklearn.base import clone
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import VotingClassifier
+from sklearn.metrics import accuracy_score
 from scipy.spatial import distance
+import numpy as np
+import pandas as pd
 import statistics
-from ML_functions.functions import get_base_classifier
 
+class SimpleVotingClassifier:
+    def __init__(self, estimators, weights):
+        self._estimators = estimators
+        self._weights = weights
+    
+    def predict(self, X):
+        ind_preds = []
+        for e in self._estimators:
+            ind_preds.append(e[1].predict(X))
+        preds = []
+        for i in range(0, len(ind_preds[0])):
+            stat = {}
+            for ind_pred, w in zip(ind_preds, self._weights):
+                try:
+                    stat[ind_pred[i]] += w
+                except KeyError:
+                    stat[ind_pred[i]] = w
+            max_l = ind_preds[0][i]
+            acc_w = 0
+            for label in stat:
+                weight = stat[label]
+                if weight > acc_w:
+                    max_l = label
+                    acc_w = weight
+            preds.append(max_l)
+        preds = np.array(preds)
+        return preds
+    
+    def score(self, X, y):
+        y_pred = self.predict(X)
+        return accuracy_score(y, y_pred)
+
+# https://link.springer.com/article/10.1007/s11063-020-10191-1
 class SC3MC:
     def __init__(self, clf, sec_clfs=None):
         self.clf = clf
         if sec_clfs == None:
-            sec_clfs = [clone(self.clf), clone(self.clf), clone(self.clf)]
+            self.sec_clfs = [clone(self.clf), clone(self.clf), clone(self.clf)]
         else:
             self.sec_clfs = sec_clfs
         self.vc = None
@@ -31,17 +65,18 @@ class SC3MC:
             estimators.append(("clf{}".format(i), c))
             weights.append(clfs[c])
             i += 1
-        vc = VotingClassifier(estimators=estimators,voting="hard",weights=weights)
+        vc = SimpleVotingClassifier(estimators=estimators, weights=weights)
         return vc
 
-    def _train_clfs(self, clfs, L):
+    def _train_clfs(self, clfs, L, sample_frac):
         for clf in clfs:
-            sample = L.sample(frac = frac)
+            sample = L.sample(frac = sample_frac)
             X_s = sample.iloc[:,0:sample.shape[1]-1]
             y_s = sample.iloc[:,-1]
             clf.fit(X_s, y_s)
 
     def fit(self, L, U, test_frac=0.1, k=3, sample_frac=0.4, v=0.01, a=0.1):
+        print("Unlabeled data: {} instances".format(U.shape[0])) #debug
         # initialization
         X_L = L.iloc[:,0:L.shape[1]-1]
         y_L = L.iloc[:,-1]
@@ -49,16 +84,18 @@ class SC3MC:
         clf0 = clone(self.clf)
         clf0.fit(X_L, y_L)
         error1 = 1 - clf0.score(X_T, y_T)
-        X_L[L.columns[-1]] = y_L
-        L = X_L
-        X_T[L.columns[-1]] = y_T
-        T = X_T
+        X_L_copy = X_L.copy()
+        X_L_copy[L.columns[-1]] = y_L
+        L = X_L_copy
+        X_T_copy = X_T.copy()
+        X_T_copy[L.columns[-1]] = y_T
+        T = X_T_copy
         acc = 0
         predicted = 0
 
         clfs = {}
         for i in range(0, k):
-            sample = L.sample(frac = frac)
+            sample = L.sample(frac = sample_frac)
             X_s = sample.iloc[:,0:sample.shape[1]-1]
             y_s = sample.iloc[:,-1]
             clf = clone(self.clf)
@@ -100,7 +137,7 @@ class SC3MC:
                     y_L = L_prime.iloc[:,-1]
                     clf0 = clone(self.clf)
                     clf0.fit(X_L, y_L)
-                    error2 = 1 - clf0_copy.score(X_T, y_T)
+                    error2 = 1 - clf0.score(X_T, y_T)
                     # security verification
                     if error2 < error1:
                         X_L = L.iloc[:,0:L.shape[1]-1]
@@ -117,13 +154,14 @@ class SC3MC:
                         # finalize
                         L = L_prime
                         error1 = error2
-                        self._train_clfs(clfs, L)
+                        self._train_clfs(clfs, L, sample_frac)
                         predicted += 1
                         if pl == list(r[1])[-1]:
                             acc += 1
+                print("Unlabeled data: {} instances".format(U.shape[0])) #debug
         # end
         L = L.append(T, ignore_index=True)
-        self._train_clfs(clfs, L)
+        self._train_clfs(clfs, L, sample_frac)
         self.vc = self._get_vc(clfs)
         return self, acc/predicted
 
