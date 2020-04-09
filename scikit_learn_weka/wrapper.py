@@ -12,7 +12,7 @@ class ScikitLearnWekaWrapper(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     A class to wrap Weka classifiers to be compatible with Scikit-Learn classifiers
 
     Attributes:
-    _clf: Weka classifier object
+    _clf: Wrapped Weka classifier object
     """
     
     def __init__(self, clf=None):
@@ -114,7 +114,15 @@ class ScikitLearnWekaWrapper(ClassifierMixin, BaseEstimator, metaclass=ABCMeta):
     def get_params(self, deep=False):
         return {'clf' : self._clf}
 
+
 class WekaWrapper:
+    """
+    A class to wrap Weka classifiers to be copyable
+
+    Attributes:
+    _clf: Weka classifier object
+    _classname: Name of Weka classifier class
+    """
     def __init__(self, clf, classname):
         self._clf = clf
         self._classname = classname

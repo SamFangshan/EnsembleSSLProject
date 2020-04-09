@@ -61,15 +61,16 @@ os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-11-openjdk-amd64/"
 import weka.core.jvm as jvm
 jvm.start()
 ```
-Also remember to import the WEKA Scikit-Learn wrapper
+Also remember to import the WEKA wrapper and WEKA Scikit-Learn wrapper
 ```python
-from scikit_learn_weka.wrapper import ScikitLearnWekaWrapper
+from scikit_learn_weka.wrapper import WekaWrapper, ScikitLearnWekaWrapper
 ```
 Initialisation example
 ```python
 from weka.classifiers import Classifier
-cls = Classifier(classname="weka.classifiers.functions.SMO", options=["-N", "0"]) # WEKA classifier
-cls = ScikitLearnWekaWrapper(cls) # wrap WEKA classifier
+classname = "weka.classifiers.functions.SMO"
+cls = Classifier(classname=classname) # WEKA classifier
+cls = ScikitLearnWekaWrapper(WekaWrapper(cls, classname)) # wrap WEKA classifier
 # use cls as if it were a Scikit-Learn classifier
 ```
 For a full example, please refer to weka-example.ipynb
@@ -133,3 +134,4 @@ class Classifier:
 + 5. Experimental Results
 + 6. Comparison Analysis
 + 6. Conclusion
+

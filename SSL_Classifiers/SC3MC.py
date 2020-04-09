@@ -7,6 +7,13 @@ import pandas as pd
 import statistics
 
 class SimpleVotingClassifier:
+    """
+    A weighted voting classifier that uses already trained base classifiers
+
+    Attributes:
+    _estimators: a list of base classifiers
+    _weights: a list of weights of base classifiers
+    """
     def __init__(self, estimators, weights):
         self._estimators = estimators
         self._weights = weights
@@ -18,18 +25,17 @@ class SimpleVotingClassifier:
         preds = []
         for i in range(0, len(ind_preds[0])):
             stat = {}
+            max_l = ind_preds[0][i]
+            acc_w = 0
             for ind_pred, w in zip(ind_preds, self._weights):
                 try:
                     stat[ind_pred[i]] += w
                 except KeyError:
                     stat[ind_pred[i]] = w
-            max_l = ind_preds[0][i]
-            acc_w = 0
-            for label in stat:
-                weight = stat[label]
-                if weight > acc_w:
-                    max_l = label
-                    acc_w = weight
+                if stat[ind_pred[i]] > acc_w:
+                    max_l = ind_pred[i]
+                    acc_w = stat[ind_pred[i]]
+            
             preds.append(max_l)
         preds = np.array(preds)
         return preds
@@ -38,8 +44,14 @@ class SimpleVotingClassifier:
         y_pred = self.predict(X)
         return accuracy_score(y, y_pred)
 
-# https://link.springer.com/article/10.1007/s11063-020-10191-1
 class SC3MC:
+    """
+    An SSL classifier based on https://link.springer.com/article/10.1007/s11063-020-10191-1
+
+    Attributes:
+    clf: supervised learning classifier object
+    sec_clfs: classifiers used for security verification
+    """
     def __init__(self, clf, sec_clfs=None):
         self.clf = clf
         if sec_clfs == None:
@@ -75,7 +87,7 @@ class SC3MC:
             y_s = sample.iloc[:,-1]
             clf.fit(X_s, y_s)
 
-    def fit(self, L, U, test_frac=0.1, k=3, sample_frac=0.4, v=0.01, a=0.1):
+    def fit(self, L, U, test_frac=0.1, k=3, sample_frac=0.4, v=0.01, a=0.1, early_stop=True):
         print("Unlabeled data: {} instances".format(U.shape[0])) #debug
         # initialization
         X_L = L.iloc[:,0:L.shape[1]-1]
@@ -92,6 +104,8 @@ class SC3MC:
         T = X_T_copy
         acc = 0
         predicted = 0
+        half_total_unlabeled = U.shape[0]//2
+        stop_count = 0
 
         clfs = {}
         for i in range(0, k):
@@ -131,15 +145,23 @@ class SC3MC:
                         else:
                             clfs[c] -= a
                     # decision judgement
-                    data.append(pl)
-                    L_prime = L.append(pd.Series(data, index=L.columns), ignore_index=True)
+                    data_copy = data.copy()
+                    data_copy.append(pl)
+                    L_prime = L.append(pd.Series(data_copy, index=L.columns), ignore_index=True)
                     X_L = L_prime.iloc[:,0:L_prime.shape[1]-1]
                     y_L = L_prime.iloc[:,-1]
                     clf0 = clone(self.clf)
                     clf0.fit(X_L, y_L)
                     error2 = 1 - clf0.score(X_T, y_T)
+                    if error1 - error2 < 0.01 and half_total_unlabeled > U.shape[0] and early_stop:
+                        stop_count += 1
+                        if stop_count >= 3:
+                            break
+                    else:
+                        if stop_count > 0:
+                            stop_count -= 1
                     # security verification
-                    if error2 < error1:
+                    if error2 <= error1:
                         X_L = L.iloc[:,0:L.shape[1]-1]
                         y_L = L.iloc[:,-1]
                         X_S, X_1, y_S, y_1 = train_test_split(X_L, y_L, test_size=0.33)
@@ -173,11 +195,6 @@ class SC3MC:
 
     def score(self, X, y):
         return self.vc.score(X, y)
-
-
-
-
-
 
 
 
