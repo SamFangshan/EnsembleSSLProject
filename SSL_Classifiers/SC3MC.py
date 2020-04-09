@@ -106,6 +106,7 @@ class SC3MC:
         predicted = 0
         half_total_unlabeled = U.shape[0]//2
         stop_count = 0
+        end_now = False
 
         clfs = {}
         for i in range(0, k):
@@ -116,7 +117,7 @@ class SC3MC:
             clf.fit(X_s, y_s)
             clfs[clf] = 1/k
 
-        while not U.empty:
+        while not U.empty and not end_now:
             # filtering unlabeled samples
             labels = L.iloc[:,-1].unique()
             subsets = []
@@ -156,6 +157,7 @@ class SC3MC:
                     if error1 - error2 < 0.01 and half_total_unlabeled > U.shape[0] and early_stop:
                         stop_count += 1
                         if stop_count >= 3:
+                            end_now = True
                             break
                     else:
                         if stop_count > 0:
@@ -195,6 +197,3 @@ class SC3MC:
 
     def score(self, X, y):
         return self.vc.score(X, y)
-
-
-
