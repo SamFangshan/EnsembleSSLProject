@@ -154,7 +154,7 @@ class SC3MC:
                     clf0 = clone(self.clf)
                     clf0.fit(X_L, y_L)
                     error2 = 1 - clf0.score(X_T, y_T)
-                    if error1 - error2 < 0.01 and half_total_unlabeled > U.shape[0] and early_stop:
+                    if error1 - error2 < 0.001 and half_total_unlabeled > U.shape[0] and early_stop:
                         stop_count += 1
                         if stop_count >= 3:
                             end_now = True
@@ -197,3 +197,6 @@ class SC3MC:
 
     def score(self, X, y):
         return self.vc.score(X, y)
+
+
+

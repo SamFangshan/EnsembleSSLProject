@@ -1,11 +1,12 @@
+import os
 import pandas as pd
 from sklearn.base import clone
 from scikit_learn_weka.wrapper import WekaWrapper, ScikitLearnWekaWrapper
 from weka.classifiers import Classifier
 from sklearn.metrics import accuracy_score
-from SSL_Classifiers import *
+from SSL_Classifiers.SC3MC import SC3MC
 
-DATASETS = ['satimage', 'glass', 'hepatitis', 'magic', 'bupa', 'wisconsin', 'lymphography', 'phoneme', 'titanic', 'abalone', 'spambase', 'sonar', 'wine', 'vowel', 'australian', 'vehicle', 'spectfheart', 'contraceptive', 'twonorm', 'breast', 'crx', 'ecoli', 'saheart', 'automobile', 'segment', 'penbased', 'flare', 'movement_libras', 'banana', 'coil2000', 'tic-tac-toe', 'ring', 'dermatology', 'page-blocks', 'thyroid', 'mammographic', 'iris', 'german', 'cleveland', 'haberman', 'monk-2', 'nursery', 'appendicitis', 'zoo', 'pima', 'chess', 'splice', 'mushroom', 'heart', 'tae', 'led7digit', 'yeast', 'marketing', 'housevotes', 'texture']
+DATASETS = ['banana', 'glass', 'lymphography', 'breast', 'flare', 'titanic', 'led7digit', 'zoo', 'wisconsin', 'iris']
 
 # Use a factory pattern obtain a primitive classifier
 def get_base_classifier(clf_name):
@@ -36,13 +37,29 @@ def train_and_validate(clf, L, U, X_test, y_test, mode="self"):
         ssl_clf, tra_acc = CoTraining(clf).fit(L, U)
     elif mode == "tri":
         ssl_clf, tra_acc = TriTraining(clf).fit(L, U)
+    elif mode == "sc3mc":
+        ssl_clf, tra_acc = SC3MC(clf).fit(L, U)
 
     y_pred = ssl_clf.predict(X_test)
     ind_acc = accuracy_score(y_test, y_pred)
     return tra_acc, ind_acc
 
 # Conduct cross validation across all partitions of a specific dataset
-def cross_validation(clf, dataset, percentage, mode="self"):
+def cross_validation(clf, dataset, percentage, mode="self", clf_name="unknown"):
+    cv_result_file = "crossvalidation.csv"
+    if not os.path.exists(cv_result_file):
+        f = open(cv_result_file,"w+")
+        f.write('base_classifier,dataset,percentage,mode,iteration,transductive,inductive\n')
+        f.close()
+        
+    i = 0
+    already_done = -1
+    df_result = pd.read_csv(cv_result_file)
+    df_result = df_result[(df_result["base_classifier"] == clf_name) & (df_result["dataset"] == dataset) & 
+              (df_result["percentage"] == percentage) & (df_result["mode"] == mode)]
+    if not df_result.empty:
+        already_done = df['iteration'].max()
+    
     df_u_list = []
     df_l_list = []
     df_t_list = []
@@ -68,26 +85,37 @@ def cross_validation(clf, dataset, percentage, mode="self"):
     tra_acc_avg = 0
     ind_acc_avg = 0
     for p in range(0, 10):
-        X_test = df_t_list[p].iloc[:,0:-1]
-        y_test = df_t_list[p].iloc[:,-1]
+        if i <= already_done:
+            tra_acc = list(df_result[df_result["iteration"] == i]["transductive"])[0]
+            ind_acc = list(df_result[df_result["iteration"] == i]["inductive"])[0]
+        else:
+            X_test = df_t_list[p].iloc[:,0:-1]
+            y_test = df_t_list[p].iloc[:,-1]
         
-        U = None
-        L = None
-        for i in range(0, 10):
-            if i == p:
-                continue
-            if U is None:
-                U = df_u_list[i]
-            else:
-                U = U.append(df_u_list[i], ignore_index = True) 
-            if L is None:
-                L = df_l_list[i]
-            else:
-                L = L.append(df_l_list[i], ignore_index = True)
-        clf_copy = clone(clf)
-        tra_acc, ind_acc = train_and_validate(clf_copy, L, U, X_test, y_test, mode=mode)
+            U = None
+            L = None
+            for i in range(0, 10):
+                if i == p:
+                    continue
+                if U is None:
+                    U = df_u_list[i]
+                else:
+                    U = U.append(df_u_list[i], ignore_index = True) 
+                if L is None:
+                    L = df_l_list[i]
+                else:
+                    L = L.append(df_l_list[i], ignore_index = True)
+            clf_copy = clone(clf)
+            tra_acc, ind_acc = train_and_validate(clf_copy, L, U, X_test, y_test, mode=mode)
+            f = open(cv_result_file,"a+")
+            to_be_written = '{},{},{},{},{},{},{}\n'.format(clf_name, dataset, percentage, mode, i, tra_acc, ind_acc)
+            f.write(to_be_written)
+            f.close()
+        
         tra_acc_avg += tra_acc
         ind_acc_avg += ind_acc
+        
+        i += 1
         
     tra_acc_avg /= 10
     ind_acc_avg /= 10
@@ -101,7 +129,7 @@ def avg_by_percentage(clf, percentage, mode="self"):
     tra_avg = 0
     ind_avg = 0
     for dataset in DATASETS:
-        tra, ind = cross_validation(clf, dataset, percentage, mode="self")
+        tra, ind = cross_validation(clf, dataset, percentage, mode=mode)
         tra_avg += tra
         ind_avg += ind
     tra_avg /= len(DATASETS)
