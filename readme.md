@@ -9,7 +9,9 @@ drive.mount('/content/drive')
 import os
 os.chdir('/content/drive/My Drive/4041 Code+Data')
 ```
-## 2. File access template
+## 2. Data Preprocessing
+The original data sets were retrieved from https://sci2s.ugr.es/keel/semisupervised.php.  All retrived data sets are in `.dat` format. In order to make the data sets Python friendly, they are all converted to `.csv` format. Afterwards, labeled training data and unlabeled training data are separated into two files. Data sets with categorical features are all one-hot encoded, and all numerical features are minmax normalized.
+## 3. File access template
 The following template can be used when you need to load a specific CSV file
 
 ```python
@@ -40,7 +42,7 @@ Test data example:
 attribute1,attribute2,attribute3,attribute4,attribute5,label
 ```
 
-## 3. WEKA
+## 4. WEKA
 Run the following two chunks of code when you need to use the WEKA package, to install dependencies
 #### What is WEKA? Refer to https://www.cs.waikato.ac.nz/ml/weka/ and https://weka.sourceforge.io/doc.stable-3-8/weka/classifiers/Classifier.html
 ```python
@@ -59,19 +61,20 @@ os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-11-openjdk-amd64/"
 import weka.core.jvm as jvm
 jvm.start()
 ```
-Also remember to import the WEKA Scikit-Learn wrapper
+Also remember to import the WEKA wrapper and WEKA Scikit-Learn wrapper
 ```python
-from scikit_learn_weka.wrapper import ScikitLearnWekaWrapper
+from scikit_learn_weka.wrapper import WekaWrapper, ScikitLearnWekaWrapper
 ```
 Initialisation example
 ```python
 from weka.classifiers import Classifier
-cls = Classifier(classname="weka.classifiers.functions.SMO", options=["-N", "0"]) # WEKA classifier
-cls = ScikitLearnWekaWrapper(cls) # wrap WEKA classifier
+classname = "weka.classifiers.functions.SMO"
+cls = Classifier(classname=classname) # WEKA classifier
+cls = ScikitLearnWekaWrapper(WekaWrapper(cls, classname)) # wrap WEKA classifier
 # use cls as if it were a Scikit-Learn classifier
 ```
 For a full example, please refer to weka-example.ipynb
-## 4. Functions to be implemented
+## 5. Functions to be implemented
 ```python
 def generate_base_classifier(clf_name):
     return clf
@@ -80,25 +83,6 @@ def generate_base_classifier(clf_name):
 def get_ensemble(ensemble_name):
     return clf_ensemble # A VotingClassifier object 
 # refer to https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html#sklearn.ensemble.VotingClassifier
-
-def self_training(clf, L, U):
-    return clf, X_train, y_train # all labeled
-
-# https://github.com/jjrob13/sklearn_cotraining/blob/master/sklearn_cotraining/classifiers.py
-# p - (Optional) The number of positive examples that will be 'labeled' by each classifier during each iteration
-# 		The default is the is determined by the smallest integer ratio of positive to negative samples in L (from paper)
-# n - (Optional) The number of negative examples that will be 'labeled' by each classifier during each iteration
-# 		The default is the is determined by the smallest integer ratio of positive to negative samples in L (from paper)
-# k - (Optional) The number of iterations
-# 		The default is 30 (from paper)
-# u - (Optional) The size of the pool of unlabeled samples from which the classifier can choose
-# 		Default - 75 (from paper)
-def co_training(clf, L, U, p=-1, n=-1, k=30, u = 75):
-    return clf_packaged, X_train, y_train
-
-# https://github.com/LiangjunFeng/Tri-training/blob/master/Tri-training.py
-def tri_training(clf, L, U):
-    return clf_packaged, X_train, y_train
 
 def train_and_validate(clf, L, U, X_test, y_test, mode="self"):
     # invoke self_training/co_training/tri_training
@@ -142,7 +126,7 @@ class Classifier:
         # (optional)
         return score
 ```
-## 5. Research Paper Components
+## 6. Research Paper Components
 + 1. Introduction
 + 2. Literature Review
 + 3. Review on Semi-supervised Self-labeled Classification (??)
@@ -150,3 +134,4 @@ class Classifier:
 + 5. Experimental Results
 + 6. Comparison Analysis
 + 6. Conclusion
+
