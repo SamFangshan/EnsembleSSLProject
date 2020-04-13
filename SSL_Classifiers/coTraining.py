@@ -50,7 +50,8 @@ class CoTrainingClassifier(object):
         U = shuffle(U)
         
         # preprocess
-        data_l, label_l = self._prepare_data(L)
+        labels_to_fit = np.append(L.iloc[:, -1].values, U.iloc[:, -1].values)
+        data_l, label_l = self._prepare_data(L, labels_to_fit)
         U, ground_truth = self._prepare_data(U)
         L = np.column_stack((data_l, label_l))
         
@@ -132,7 +133,7 @@ class CoTrainingClassifier(object):
         return prob
 
 
-    def _prepare_data(self, df: pd.DataFrame):
+    def _prepare_data(self, df: pd.DataFrame, labels_to_fit=None):
         example = df.head(1)
 
         labeled = example.iloc[0,-2] != 'unlabeled'
@@ -140,11 +141,14 @@ class CoTrainingClassifier(object):
         if labeled:
             data = df.iloc[:, :-1].values
             labels: np.ndarray = df.iloc[:, -1].values
-            labels = labels.astype(np.str)
 
             if self._encoder is None:
                 self._encoder = preprocessing.LabelEncoder()
-                labels = self._encoder.fit_transform(labels)
+                if labels_to_fit is not None:
+                    self._encoder.fit(labels_to_fit)
+                    labels = self._encoder.transform(labels)
+                else:
+                    labels = self._encoder.fit_transform(labels)
             else:
                 labels = self._encoder.transform(labels)
 
