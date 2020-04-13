@@ -88,7 +88,6 @@ class SC3MC:
             clf.fit(X_s, y_s)
 
     def fit(self, L, U, test_frac=0.1, k=3, sample_frac=0.4, v=0.01, a=0.1, early_stop=True):
-        print("Unlabeled data: {} instances".format(U.shape[0])) #debug
         # initialization
         X_L = L.iloc[:,0:L.shape[1]-1]
         y_L = L.iloc[:,-1]
@@ -182,7 +181,6 @@ class SC3MC:
                         predicted += 1
                         if pl == list(r[1])[-1]:
                             acc += 1
-                print("Unlabeled data: {} instances".format(U.shape[0])) #debug
         # end
         L = L.append(T, ignore_index=True)
         self._train_clfs(clfs, L, sample_frac)

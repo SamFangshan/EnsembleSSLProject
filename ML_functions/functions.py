@@ -46,19 +46,19 @@ def train_and_validate(clf, L, U, X_test, y_test, mode="self"):
 
 # Conduct cross validation across all partitions of a specific dataset
 def cross_validation(clf, dataset, percentage, mode="self", clf_name="unknown"):
+    print("Cross Validation: {} {}%".format(dataset, percentage))
     cv_result_file = "crossvalidation.csv"
     if not os.path.exists(cv_result_file):
         f = open(cv_result_file,"w+")
         f.write('base_classifier,dataset,percentage,mode,iteration,transductive,inductive\n')
         f.close()
         
-    i = 0
     already_done = -1
     df_result = pd.read_csv(cv_result_file)
     df_result = df_result[(df_result["base_classifier"] == clf_name) & (df_result["dataset"] == dataset) & 
               (df_result["percentage"] == percentage) & (df_result["mode"] == mode)]
     if not df_result.empty:
-        already_done = df['iteration'].max()
+        already_done = df_result['iteration'].max()
     
     df_u_list = []
     df_l_list = []
@@ -85,7 +85,8 @@ def cross_validation(clf, dataset, percentage, mode="self", clf_name="unknown"):
     tra_acc_avg = 0
     ind_acc_avg = 0
     for p in range(0, 10):
-        if i <= already_done:
+        if p <= already_done:
+            print("Already done: ({}/{})".format(p, already_done))
             tra_acc = list(df_result[df_result["iteration"] == i]["transductive"])[0]
             ind_acc = list(df_result[df_result["iteration"] == i]["inductive"])[0]
         else:
@@ -108,7 +109,8 @@ def cross_validation(clf, dataset, percentage, mode="self", clf_name="unknown"):
             clf_copy = clone(clf)
             tra_acc, ind_acc = train_and_validate(clf_copy, L, U, X_test, y_test, mode=mode)
             f = open(cv_result_file,"a+")
-            to_be_written = '{},{},{},{},{},{},{}\n'.format(clf_name, dataset, percentage, mode, i, tra_acc, ind_acc)
+            to_be_written = '{},{},{},{},{},{},{}\n'.format(clf_name, dataset, percentage, mode, p, tra_acc, ind_acc)
+            print(to_be_written)
             f.write(to_be_written)
             f.close()
         
