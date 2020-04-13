@@ -17,7 +17,7 @@ class SimpleVotingClassifier:
     def __init__(self, estimators, weights):
         self._estimators = estimators
         self._weights = weights
-    
+
     def predict(self, X):
         ind_preds = []
         for e in self._estimators:
@@ -35,16 +35,16 @@ class SimpleVotingClassifier:
                 if stat[ind_pred[i]] > acc_w:
                     max_l = ind_pred[i]
                     acc_w = stat[ind_pred[i]]
-            
+
             preds.append(max_l)
         preds = np.array(preds)
         return preds
-    
+
     def score(self, X, y):
         y_pred = self.predict(X)
         return accuracy_score(y, y_pred)
 
-class SC3MC:
+class SC3MCClassifier:
     """
     An SSL classifier based on https://link.springer.com/article/10.1007/s11063-020-10191-1
 
