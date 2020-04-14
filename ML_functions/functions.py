@@ -88,8 +88,8 @@ def cross_validation(clf, dataset, percentage, mode="self", clf_name="unknown"):
     for p in range(0, 10):
         if p <= already_done:
             print("Already done: ({}/{})".format(p, already_done))
-            tra_acc = list(df_result[df_result["iteration"] == i]["transductive"])[0]
-            ind_acc = list(df_result[df_result["iteration"] == i]["inductive"])[0]
+            tra_acc = list(df_result[df_result["iteration"] == p]["transductive"])[0]
+            ind_acc = list(df_result[df_result["iteration"] == p]["inductive"])[0]
         else:
             X_test = df_t_list[p].iloc[:,0:-1]
             y_test = df_t_list[p].iloc[:,-1]
@@ -118,7 +118,6 @@ def cross_validation(clf, dataset, percentage, mode="self", clf_name="unknown"):
         tra_acc_avg += tra_acc
         ind_acc_avg += ind_acc
         
-        i += 1
         
     tra_acc_avg /= 10
     ind_acc_avg /= 10
