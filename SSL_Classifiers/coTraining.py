@@ -10,7 +10,7 @@ from sklearn.svm import SVC
 
 
 class CoTrainingClassifier(object):
-    def __init__(self, clf1, clf2=None, iteration=None, unsample=100, to_predict=10, view_ratio=0.5):
+    def __init__(self, clf1, clf2=None, iteration=None, unsample=7500, to_predict=500, view_ratio=0.5):
         """
         :param clf1:
         :param clf2:
@@ -36,7 +36,7 @@ class CoTrainingClassifier(object):
 
         random.seed(a=None, version=2)
 
-    def fit(self, L: pd.DataFrame, U: pd.DataFrame):
+    def fit(self, L: pd.DataFrame, U: pd.DataFrame, early_stop=True):
         """
         :param L: Labeled Data
         :param U: Unlabled Data
@@ -48,9 +48,10 @@ class CoTrainingClassifier(object):
         # randomize here, and then just take from the back
         # so we don't have to sample every time
         U = shuffle(U)
-        
+        half_total_unlabeled = U.shape[0] // 2
         # preprocess
-        data_l, label_l = self._prepare_data(L)
+        labels_to_fit = np.append(L.iloc[:, -1].values, U.iloc[:, -1].values)
+        data_l, label_l = self._prepare_data(L, labels_to_fit)
         U, ground_truth = self._prepare_data(U)
         L = np.column_stack((data_l, label_l))
         
@@ -66,8 +67,11 @@ class CoTrainingClassifier(object):
 
         it = 0
         acc = 0
+        stop_count = 0
+        prev_trans = 0
+        predicted = 0
         # while U_np is not empty or we reach maximum iterations
-        while (self.iteration_ is None or it != self.iteration_) and U.size:
+        while (self.iteration_ is None or it != self.iteration_) and (U.size or it == 0):
             data_l = L[:, :-1]
             labels_l = L[:, -1]
 
@@ -97,18 +101,31 @@ class CoTrainingClassifier(object):
             u_with_label = np.column_stack((u_np_fract, classes))
             
             # compile transductive accuracy
-            acc += accuracy_score(classes[indices], ground_truth_np_fract[indices])
-
+            trans = accuracy_score(classes[indices], ground_truth_np_fract[indices])
+            acc += trans
+            predicted += len(to_predict_indices)
+            
             # Add P and N to L.
             L = np.concatenate((L, u_with_label[indices, :]))
             u_np_fract = u_np_fract[np.invert(indices), :]
             ground_truth_np_fract = ground_truth_np_fract[np.invert(indices)]
+            
+            # early stop
+            if trans - prev_trans < 0.001 and early_stop and half_total_unlabeled <= predicted:
+                stop_count += 1
+                if stop_count >= 5:
+                    break
+            else:
+                if stop_count > 0:
+                    stop_count = 0
 
             # Refill U' with examples from U to keep U' at constant size of u
             fill_up, U = np.split(U, [self.unsample - len(u_np_fract)])
             u_np_fract = np.concatenate((u_np_fract, fill_up))
             gt_fill_up, ground_truth = np.split(ground_truth, [self.unsample - len(ground_truth_np_fract)])
             ground_truth_np_fract = np.concatenate((ground_truth_np_fract, gt_fill_up))
+            
+            prev_trans = trans
             
         return self, acc/it
 
@@ -132,7 +149,7 @@ class CoTrainingClassifier(object):
         return prob
 
 
-    def _prepare_data(self, df: pd.DataFrame):
+    def _prepare_data(self, df: pd.DataFrame, labels_to_fit=None):
         example = df.head(1)
 
         labeled = example.iloc[0,-2] != 'unlabeled'
@@ -140,11 +157,14 @@ class CoTrainingClassifier(object):
         if labeled:
             data = df.iloc[:, :-1].values
             labels: np.ndarray = df.iloc[:, -1].values
-            labels = labels.astype(np.str)
 
             if self._encoder is None:
                 self._encoder = preprocessing.LabelEncoder()
-                labels = self._encoder.fit_transform(labels)
+                if labels_to_fit is not None:
+                    self._encoder.fit(labels_to_fit)
+                    labels = self._encoder.transform(labels)
+                else:
+                    labels = self._encoder.fit_transform(labels)
             else:
                 labels = self._encoder.transform(labels)
 

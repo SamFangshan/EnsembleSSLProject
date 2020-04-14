@@ -4,7 +4,8 @@ from sklearn.base import clone
 from scikit_learn_weka.wrapper import WekaWrapper, ScikitLearnWekaWrapper
 from weka.classifiers import Classifier
 from sklearn.metrics import accuracy_score
-from SSL_Classifiers.SC3MC import SC3MC
+from SSL_Classifiers.SC3MC import SC3MCClassifier
+from SSL_Classifiers.CoTraining import CoTrainingClassifier
 
 DATASETS = ['banana', 'glass', 'lymphography', 'breast', 'flare', 'titanic', 'led7digit', 'zoo', 'wisconsin', 'iris']
 
@@ -32,13 +33,13 @@ def get_base_classifier(clf_name):
 # Train and Validate on a specific dataset
 def train_and_validate(clf, L, U, X_test, y_test, mode="self"):
     if mode == "self":
-        ssl_clf, tra_acc = SelfTraining(clf).fit(L, U)
+        ssl_clf, tra_acc = SelfTrainingClassifier(clf).fit(L, U)
     elif mode == "co":
-        ssl_clf, tra_acc = CoTraining(clf).fit(L, U)
+        ssl_clf, tra_acc = CoTrainingClassifier(clf).fit(L, U)
     elif mode == "tri":
-        ssl_clf, tra_acc = TriTraining(clf).fit(L, U)
+        ssl_clf, tra_acc = TriTrainingClassifier(clf).fit(L, U)
     elif mode == "sc3mc":
-        ssl_clf, tra_acc = SC3MC(clf).fit(L, U)
+        ssl_clf, tra_acc = SC3MCClassifier(clf).fit(L, U)
 
     y_pred = ssl_clf.predict(X_test)
     ind_acc = accuracy_score(y_test, y_pred)
@@ -87,8 +88,8 @@ def cross_validation(clf, dataset, percentage, mode="self", clf_name="unknown"):
     for p in range(0, 10):
         if p <= already_done:
             print("Already done: ({}/{})".format(p, already_done))
-            tra_acc = list(df_result[df_result["iteration"] == i]["transductive"])[0]
-            ind_acc = list(df_result[df_result["iteration"] == i]["inductive"])[0]
+            tra_acc = list(df_result[df_result["iteration"] == p]["transductive"])[0]
+            ind_acc = list(df_result[df_result["iteration"] == p]["inductive"])[0]
         else:
             X_test = df_t_list[p].iloc[:,0:-1]
             y_test = df_t_list[p].iloc[:,-1]
@@ -117,7 +118,6 @@ def cross_validation(clf, dataset, percentage, mode="self", clf_name="unknown"):
         tra_acc_avg += tra_acc
         ind_acc_avg += ind_acc
         
-        i += 1
         
     tra_acc_avg /= 10
     ind_acc_avg /= 10
