@@ -88,6 +88,18 @@ class SC3MCClassifier:
             clf.fit(X_s, y_s)
 
     def fit(self, L, U, test_frac=0.1, k=3, sample_frac=0.4, v=0.01, a=0.1, early_stop=True):
+        """
+        :param L: Labeled Data
+        :param U: Unlabled Data
+        :param test_frac:  Fraction of labeled data used as validation set
+        :param k:  Number of classifiers to generate
+        :param sample_frac: Fraction of labeled data to draw random sample from
+        :param v: Minimum standard deviation among differences between unlabeled example
+                  and labeled classes
+        :param a: The amount to increment/decrement the weights of classifiers
+        :early_stop: Enable early stop before U is empty
+        :return:self, transductive_accuracy
+        """
         # initialization
         X_L = L.iloc[:,0:L.shape[1]-1]
         y_L = L.iloc[:,-1]
