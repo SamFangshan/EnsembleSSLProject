@@ -17,7 +17,7 @@ class SimpleVotingClassifier:
     def __init__(self, estimators, weights):
         self._estimators = estimators
         self._weights = weights
-
+    
     def predict(self, X):
         ind_preds = []
         for e in self._estimators:
@@ -35,11 +35,11 @@ class SimpleVotingClassifier:
                 if stat[ind_pred[i]] > acc_w:
                     max_l = ind_pred[i]
                     acc_w = stat[ind_pred[i]]
-
+            
             preds.append(max_l)
         preds = np.array(preds)
         return preds
-
+    
     def score(self, X, y):
         y_pred = self.predict(X)
         return accuracy_score(y, y_pred)
@@ -88,18 +88,6 @@ class SC3MCClassifier:
             clf.fit(X_s, y_s)
 
     def fit(self, L, U, test_frac=0.1, k=3, sample_frac=0.4, v=0.01, a=0.1, early_stop=True):
-        """
-        :param L: Labeled Data
-        :param U: Unlabled Data
-        :param test_frac:  Fraction of labeled data used as validation set
-        :param k:  Number of classifiers to generate
-        :param sample_frac: Fraction of labeled data to draw random sample from
-        :param v: Minimum standard deviation among differences between unlabeled example
-                  and labeled classes
-        :param a: The amount to increment/decrement the weights of classifiers
-        :early_stop: Enable early stop before U is empty
-        :return:self, transductive_accuracy
-        """
         # initialization
         X_L = L.iloc[:,0:L.shape[1]-1]
         y_L = L.iloc[:,-1]
@@ -118,6 +106,7 @@ class SC3MCClassifier:
         half_total_unlabeled = U.shape[0]//2
         stop_count = 0
         end_now = False
+        print("Unlabeled:", U.shape[0])
 
         clfs = {}
         for i in range(0, k):
@@ -144,6 +133,7 @@ class SC3MCClassifier:
                     distances.append(d)
                 dist = statistics.stdev(distances)
                 U.drop(index, inplace=True)
+                print("Unlabeled:", U.shape[0])
                 # classifier prediction
                 if dist >= v:
                     # weighted voting mechanism
@@ -165,14 +155,14 @@ class SC3MCClassifier:
                     clf0 = clone(self.clf)
                     clf0.fit(X_L, y_L)
                     error2 = 1 - clf0.score(X_T, y_T)
-                    if error1 - error2 < 0.001 and half_total_unlabeled > U.shape[0] and early_stop:
+                    if error1 - error2 < 0.005 and half_total_unlabeled > U.shape[0] and early_stop:
                         stop_count += 1
                         if stop_count >= 3:
                             end_now = True
                             break
                     else:
                         if stop_count > 0:
-                            stop_count -= 1
+                            stop_count = 0
                     # security verification
                     if error2 <= error1:
                         X_L = L.iloc[:,0:L.shape[1]-1]
@@ -183,7 +173,10 @@ class SC3MCClassifier:
                         for i in range(0, 3):
                             dataset = datasets[i]
                             clf = self.sec_clfs[i]
-                            clf.fit(dataset[0], dataset[1])
+                            try:
+                                clf.fit(dataset[0], dataset[1])
+                            except Exception:
+                                continue
                             if clf.predict([data])[0] != pl:
                                 continue
                         # finalize
