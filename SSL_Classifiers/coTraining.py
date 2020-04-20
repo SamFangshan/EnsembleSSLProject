@@ -10,7 +10,7 @@ from sklearn.svm import SVC
 
 
 class CoTrainingClassifier(object):
-    def __init__(self, clf1, clf2=None, iteration=None, unsample=7500, to_predict=500, view_ratio=0.5):
+    def __init__(self, clf1, clf2=None, iteration=None, unsample=250, to_predict=25, view_ratio=0.5):
         """
         :param clf1:
         :param clf2:
@@ -49,6 +49,7 @@ class CoTrainingClassifier(object):
         # so we don't have to sample every time
         U = shuffle(U)
         half_total_unlabeled = U.shape[0] // 2
+        print("Unlabeled size:", U.shape[0])
         # preprocess
         labels_to_fit = np.append(L.iloc[:, -1].values, U.iloc[:, -1].values)
         data_l, label_l = self._prepare_data(L, labels_to_fit)
@@ -104,6 +105,7 @@ class CoTrainingClassifier(object):
             trans = accuracy_score(classes[indices], ground_truth_np_fract[indices])
             acc += trans
             predicted += len(to_predict_indices)
+            print("Predicted:", predicted)
             
             # Add P and N to L.
             L = np.concatenate((L, u_with_label[indices, :]))
@@ -113,6 +115,7 @@ class CoTrainingClassifier(object):
             # early stop
             if trans - prev_trans < 0.001 and early_stop and half_total_unlabeled <= predicted:
                 stop_count += 1
+                print("stop_count", stop_count)
                 if stop_count >= 5:
                     break
             else:

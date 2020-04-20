@@ -1,13 +1,16 @@
 import sklearn
 import pandas as pd
 import copy
+import numpy as np
+from sklearn.base import clone
 
-class TriTrainClassifier:
-    clfs = []
+class TriTrainingClassifier:
     def __init__(self, clf1, clf2=None, clf3=None):
-
-        for n in range(3):
-            clfs.append(copy.deepcopy(clf))
+        if clf2 is None:
+            clf2 = clone(clf1)
+        if clf3 is None:
+            clf3 = clone(clf1)
+        self.clfs = [clf1, clf2, clf3]
 
 
 
@@ -35,7 +38,9 @@ class TriTrainClassifier:
           y_train.append(y_train_1)
       #######-----------transductive learning
       for n in range(3):
-          clfs[n].fit(x_train[n],y_train[n])
+          if isinstance(y_train[n][0], np.ndarray):
+              y_train_n = np.array([e[0] for e in y_train[n]])
+          self.clfs[n].fit(x_train[n],y_train_n)
       #how to get accuracy?? Compare with Unlabled answer   
 
 
@@ -58,7 +63,7 @@ class TriTrainClassifier:
         #predict
         result=[]
         for n in range(3):
-          result.append(clfs[n].predict(x_unlabled_copy))
+          result.append(self.clfs[n].predict(x_unlabled_copy))
         
         #collate answer
         Unlabled = copy.deepcopy(x_unlabled_copy)
@@ -96,7 +101,9 @@ class TriTrainClassifier:
 
         
         for n in range(3):
-          clfs[n].fit(x_train[n],y_train[n])
+          if isinstance(y_train[n][0], np.ndarray):
+            y_train_n = np.array([e[0] for e in y_train[n]])
+          self.clfs[n].fit(x_train[n],y_train_n)
         
         iteration += 1
         print(iteration)
@@ -110,7 +117,7 @@ class TriTrainClassifier:
       classifier_result=[] #result of each classifer
       final_result = [] #
       for n in range(3):
-        classifier_result.append(clfs[n].predict(x_unlabled))
+        classifier_result.append(self.clfs[n].predict(x_unlabled))
         
       #collate answer
       Unlabled_result = copy.deepcopy(x_unlabled)
@@ -142,7 +149,7 @@ class TriTrainClassifier:
       result=[] #result of each classifer
       y_pred = [] #
       for n in range(3):
-        result.append(clfs[n].predict(X))
+        result.append(self.clfs[n].predict(X))
         
       #collate answer
       Unlabled_result = copy.deepcopy(X)
@@ -155,7 +162,7 @@ class TriTrainClassifier:
         #Unlabled_result.iloc[n.]
         if result[0][n]==result[1][n] or result[0][n]==result[2][n]:
           answer = result[0][n]
-        elif classifier_result[1][n]==classifier_result[2][n] :
+        elif result[1][n]==result[2][n] :
           answer = result[1][n]
         else:
           #print("cannot agree")

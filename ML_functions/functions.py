@@ -6,8 +6,8 @@ from weka.classifiers import Classifier
 from sklearn.metrics import accuracy_score
 from SSL_Classifiers.SC3MC import SC3MCClassifier
 from SSL_Classifiers.CoTraining import CoTrainingClassifier
-
-DATASETS = ['banana', 'glass', 'lymphography', 'breast', 'flare', 'titanic', 'led7digit', 'zoo', 'wisconsin', 'iris']
+from SSL_Classifiers.TriTraining import TriTrainingClassifier
+from SSL_Classifiers.SelfTraining import SelfTrainingClassifier
 
 # Use a factory pattern obtain a primitive classifier
 def get_base_classifier(clf_name):
@@ -125,15 +125,3 @@ def cross_validation(clf, dataset, percentage, mode="self", clf_name="unknown"):
     print("Average transductive accuracy: {}".format(tra_acc_avg))
     print("Average inductive accuracy: {}".format(ind_acc_avg))
     return tra_acc_avg, ind_acc_avg
-
-# Average performance of the classifier on datasets with a specific labeled percentage
-def avg_by_percentage(clf, percentage, mode="self"):
-    tra_avg = 0
-    ind_avg = 0
-    for dataset in DATASETS:
-        tra, ind = cross_validation(clf, dataset, percentage, mode=mode)
-        tra_avg += tra
-        ind_avg += ind
-    tra_avg /= len(DATASETS)
-    ind_avg /= len(DATASETS)
-    return tra_avg, ind_avg
