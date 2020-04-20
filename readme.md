@@ -9,8 +9,13 @@ drive.mount('/content/drive')
 import os
 os.chdir('/content/drive/My Drive/4041 Code+Data')
 ```
+## 3. Fetching Data Set
+Run the following command:
+```bash
+./fetch_datasets.sh
+```
 ## 2. Data Preprocessing
-The original data sets were retrieved from https://sci2s.ugr.es/keel/semisupervised.php.  All retrived data sets are in `.dat` format. In order to make the data sets Python friendly, they are all converted to `.csv` format. Afterwards, labeled training data and unlabeled training data are separated into two files. Data sets with categorical features are all one-hot encoded, and all numerical features are minmax normalized.
+The original data sets were retrieved from https://sci2s.ugr.es/keel/semisupervised.php.  All retrived data sets are in `.dat` format. In order to make the data sets Python friendly, they are all converted to `.csv` format. Afterwards, labeled training data and unlabeled training data are separated into two files. Data sets with categorical features are all one-hot encoded, and all numerical features are minmax normalized. `data_preprocess.py` is used to perform the aboved mentioned jobs.
 ## 3. File access template
 The following template can be used when you need to load a specific CSV file
 
@@ -95,9 +100,6 @@ def cross_validation(clf, dataset_name, percentage, mode="self"):
     print(average transductive accuracy)
     print(average inductive accuracy)
     return average transductive accuracy, average inductive accuracy
-
-def avg_by_percentage(clf, percentage, mode="self"):
-    return tra_avg, ind_avg
 ```
 ```python
 class Classifier:
@@ -126,12 +128,12 @@ class Classifier:
         # (optional)
         return score
 ```
-## 6. Research Paper Components
+## 6. Experiments
+`test_with_primitive_classifier.py` is run to test SSL classifiers with primitive base classifiers.
+## 7. Research Paper Components
 + 1. Introduction
 + 2. Literature Review
-+ 3. Review on Semi-supervised Self-labeled Classification (??)
-+ 4. Methodology
-+ 5. Experimental Results
-+ 6. Comparison Analysis
-+ 6. Conclusion
++ 3. Methodology
++ 4. Experimental Results
++ 5. Conclusion
 
