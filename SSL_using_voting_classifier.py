@@ -4,13 +4,12 @@ from ML_functions.functions import *
 import numpy as np
 import pandas as pd
 
-clf_names = ["NB", "MLP", "SMO", "LMT", "PART", "3NN", "C4.5", "RIPPER"]
-datasets = ['banana', 'glass', 'lymphography', 'breast', 'flare', 'titanic', 'led7digit', 'zoo', 'wisconsin', 'iris']
-percentages = [10, 20, 30, 40]
-
 def test(mode):
+    clf_weights = [[2,1.5,1], [1,1,1]]
+    datasets = ['banana', 'glass', 'lymphography', 'breast', 'flare', 'titanic', 'led7digit', 'zoo', 'wisconsin', 'iris']
+    percentages = [10, 20, 30, 40]
     # prepare file to store experiment result
-    result_file = "{}.csv".format(mode)
+    result_file = "{}_voting.csv".format(mode)
     if not os.path.exists(result_file):
         f = open(result_file,"w+")
         f.write('base_classifier,dataset,percentage,transductive,inductive\n')
@@ -24,13 +23,17 @@ def test(mode):
     i = 0
     for dataset in datasets:
         for percentage in percentages:
-            for clf_name in clf_names:
+            for weights in clf_weights:
                 i += 1
                 # skip previously finished iterations
                 if i <= already_finished_iterations:
                     continue
                 # cross validation
-                clf = get_base_classifier(clf_name)
+                clf = get_ensemble(weights)
+                if weights == [1,1,1]:
+                    clf_name = "Majority"
+                else:
+                    clf_name = "Weighted"
                 tra, ind = cross_validation(clf, dataset, percentage, mode=mode, clf_name=clf_name)
                 # write results
                 f = open(result_file,"a+")
