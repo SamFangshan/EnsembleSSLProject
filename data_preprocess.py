@@ -2,9 +2,9 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
-DATASETS = ['satimage','glass','hepatitis', 'magic', 'bupa', 'wisconsin', 'lymphography', 'phoneme', 'titanic', 'abalone', 'spambase', 'sonar', 'wine', 'vowel', 'australian', 'vehicle', 'spectfheart', 'contraceptive', 'twonorm', 'breast', 'crx', 'ecoli', 'saheart', 'automobile', 'segment', 'penbased', 'flare', 'movement_libras', 'banana', 'coil2000', 'tic-tac-toe', 'ring', 'dermatology', 'page-blocks', 'thyroid', 'mammographic', 'iris', 'german', 'cleveland', 'haberman', 'monk-2', 'nursery', 'appendicitis', 'zoo', 'pima', 'chess', 'splice', 'mushroom', 'heart', 'tae', 'led7digit', 'yeast', 'marketing', 'housevotes', 'texture']
+DATASETS = ['hepatitis', 'lymphography', 'iris', 'automobile', 'wine', 'sonar', 'glass', 'tae', 'spectfheart', 'zoo', 'heart', 'cleveland', 'breast', 'ecoli']
 
-DATASETS_CATEGORICAL = ['lymphography', 'abalone', 'sonar', 'breast', 'crx', 'saheart', 'automobile', 'flare', 'tic-tac-toe', 'german', 'nursery', 'chess', 'splice', 'mushroom', 'housevotes']
+DATASETS_CATEGORICAL = ['lymphography', 'sonar', 'breast', 'automobile']
 
 PERCENTAGES = [10, 20, 30, 40]
 
