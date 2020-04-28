@@ -1,7 +1,7 @@
 # CE4041/CZ4041 Machine Learning Research Project
 This is a research project on semi-supervised learning (SSL) for the course CE4041/CZ4041 Machine Learning at Nanyang Technological University, Singapore
 ### This project runs on [Docker](http://www.docker.com)
-[<img src="https://www.docker.com/sites/default/files/social/docker_facebook_share.png">](http://www.docker.com/)
+[<img src="https://www.docker.com/sites/default/files/social/docker_facebook_share.png">](http://www.docker.com/)<br/>
 Please make sure Docker is installed before you proceed. To download Docker for Mac or Windows, please click [here](https://www.docker.com/products/docker-desktop).
 ## 1. Build Docker Image
 Run the following command to build the Docker image for this project.
