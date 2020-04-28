@@ -6,7 +6,7 @@ import pandas as pd
 
 def test(mode):
     clf_names = ["NB", "MLP", "SMO", "LMT", "PART", "3NN", "C4.5", "RIPPER"]
-    datasets = ['banana', 'glass', 'lymphography', 'breast', 'flare', 'titanic', 'led7digit', 'zoo', 'wisconsin', 'iris']
+    datasets = ['hepatitis', 'lymphography', 'iris', 'automobile', 'wine', 'sonar', 'glass', 'tae', 'spectfheart', 'zoo', 'heart', 'cleveland', 'breast', 'ecoli']
     percentages = [10, 20, 30, 40]
     # prepare file to store experiment result
     result_file = "{}.csv".format(mode)

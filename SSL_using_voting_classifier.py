@@ -6,7 +6,7 @@ import pandas as pd
 
 def test(mode):
     clf_weights = [[2,1.5,1], [1,1,1]]
-    datasets = ['banana', 'glass', 'lymphography', 'breast', 'flare', 'titanic', 'led7digit', 'zoo', 'wisconsin', 'iris']
+    datasets = ['hepatitis', 'lymphography', 'iris', 'automobile', 'wine', 'sonar', 'glass', 'tae', 'spectfheart', 'zoo', 'heart', 'cleveland', 'breast', 'ecoli']
     percentages = [10, 20, 30, 40]
     # prepare file to store experiment result
     result_file = "{}_voting.csv".format(mode)
@@ -40,7 +40,7 @@ def test(mode):
                 to_be_written = '{},{},{},{},{}\n'.format(clf_name, dataset, percentage, tra, ind)
                 f.write(to_be_written)
                 f.close()
-                
+
 if __name__ == "__main__":
     jvm.start()
     parser = argparse.ArgumentParser(description='Parameters')
