@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
-source("friedman.test.with.post.hoc.R")
+source("statistics/friedman.test.with.post.hoc.R")
 
 if (length(args) == 0) {
     stop("Input file name must be specified!", call.=FALSE)

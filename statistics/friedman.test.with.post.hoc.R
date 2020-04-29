@@ -1,30 +1,10 @@
 # The following code is adapted from https://gist.github.com/jacksonpradolima/b40aa19325787898fc5ddc3155752d94
 
 friedman.test.with.post.hoc <- function(data, alpha = 0.05)
-{
-  print("Check if you missing the packages 'graph' and 'Rgraphviz'. Try to install them using bioconductor")
-
-  if(!require(ggplot2))
-  {
-    print("You are missing the package 'ggplot2', we will now try to install it...")
-    install.packages("ggplot2")
-    library(ggplot2)
-  }
-  
-  if(!require(scmamp))
-  {
-    print("You are missing the package 'scmamp', we will now try to install it...")
-    install.packages("scmamp")
-    library(scmamp)
-  }
-  
-  if(!require(pgirmess))
-  {
-      print("You are missing the package 'pgirmess', we will now try to install it...")
-      install.packages("pgirmess")
-      library(pgirmess)
-  }
-  
+{ 
+  library("ggplot2")
+  library("scmamp")
+  library("pgirmess")
   pre.results <- friedmanTest(data)
   imanDavenport.result <- imanDavenportTest(data)
   
