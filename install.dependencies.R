@@ -1,0 +1,10 @@
+#!/usr/bin/env Rscript
+install.packages("BiocManager")
+install.packages("rgdal")
+install.packages("rgeos")
+install.packages("spdep")
+BiocManager::install("graph")
+BiocManager::install("Rgraphviz")
+install.packages("ggplot2")
+install.packages("scmamp")
+install.packages("pgirmess")
