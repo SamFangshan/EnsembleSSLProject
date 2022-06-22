@@ -1,6 +1,6 @@
 javabridge==1.0.18
 python-weka-wrapper3==0.1.12
-numpy==1.18.3
+numpy==1.22.0
 pandas==1.0.3
 pandas-datareader==0.8.1
 pandas-gbq==0.11.0
